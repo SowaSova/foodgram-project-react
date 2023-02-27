@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("./infra/.env")
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv(
 )
 
 
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = ["*"]
@@ -118,6 +118,7 @@ DJOSER = {
         "user_create": "api.serializers.UserSerializer",
     },
 }
+
 
 
 AUTH_USER_MODEL = "users.User"
