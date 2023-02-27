@@ -1,17 +1,20 @@
-from django.contrib.admin import register, ModelAdmin
+from django.contrib.admin import register, ModelAdmin, TabularInline
 
 from .models import (
     Ingredient,
     Tag,
     Recipe,
     IngredientInRecipe,
-    FavoriteRecipe,
-    ShoppingCart,
 )
 
 EMPTY_VALUE_DISPLAY = "--None--"
 
 
+class IngredientInLine(TabularInline):
+    model = IngredientInRecipe
+    extra = 2
+    
+    
 @register(Ingredient)
 class IngredientAdmin(ModelAdmin):
     list_display = ("name", "measurement_unit")
@@ -44,21 +47,7 @@ class RecipeAdmin(ModelAdmin):
     )
     empty_value_display = EMPTY_VALUE_DISPLAY
     readonly_fields = ("add_in_favorites",)
+    inlines = (IngredientInLine, )
 
     def add_in_favorites(self, obj):
         return obj.favorites_list.count()
-
-
-# @register(IngredientInRecipe)
-# class IngredientInRecipeAdmin(ModelAdmin):
-#     empty_value_display = EMPTY_VALUE_DISPLAY
-
-
-# @register(ShoppingCart)
-# class ShoppingCartAdmin(ModelAdmin):
-#     empty_value_display = EMPTY_VALUE_DISPLAY
-
-
-# @register(FavoriteRecipe)
-# class FavoriteAdmin(ModelAdmin):
-#     empty_value_display = EMPTY_VALUE_DISPLAY

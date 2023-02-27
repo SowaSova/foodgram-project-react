@@ -14,7 +14,7 @@ from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
 
 from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
-from .permissions import IsAdminOrReadOnly, IsAuthorStaffOrReadOnly
+from .permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
 from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
@@ -57,13 +57,13 @@ class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
 class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (AdminOrReadOnly,)
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (AdminOrReadOnly,)
 
     def get_queryset(self):
         name = self.request.query_params.get("name")
@@ -84,7 +84,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     queryset = Recipe.objects.select_related("author")
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthorStaffOrReadOnly,)
+    permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
 
@@ -158,7 +158,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         if not user.shopping_list.exists():
             return Response(status=HTTP_400_BAD_REQUEST)
         ingredients = (
-            IngredientQuantity.objects.filter(
+            IngredientInRecipe.objects.filter(
                 recipe__in=(user.shopping_list.values("id"))
             )
             .values(

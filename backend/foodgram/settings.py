@@ -106,10 +106,10 @@ DJOSER = {
     "HIDE_USERS": False,
     "SEND_ACTIVATION_EMAIL": False,
     "PERMISSIONS": {
-        "recipe": ("api.permissions.IsAuthorStaffOrReadOnly,",),
-        "recipe_list": ("api.permissions.IsAuthorStaffOrReadOnly",),
-        "user": ("api.permissions.IsOwnerUserOrReadOnly",),
-        "user_list": ("api.permissions.IsOwnerUserOrReadOnly",),
+        "recipe": ("api.permissions.AuthorStaffOrReadOnly,",),
+        "recipe_list": ("api.permissions.AuthorStaffOrReadOnly",),
+        "user": ("api.permissions.OwnerOrReadOnly",),
+        "user_list": ("api.permissions.OwnerOrReadOnly",),
     },
     "SERIALIZERS": {
         "user": "api.serializers.UserSerializer",
