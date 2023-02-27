@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv("./infra/.env")
+load_dotenv()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -79,7 +79,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME", default="postgres"),
         "USER": os.getenv("POSTGRES_USER", default="postgres"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", default="postgres"),
-        "HOST": os.getenv("DB_HOST", default="localhost"),
+        "HOST": os.getenv("DB_HOST", default="db"),
         "PORT": os.getenv("DB_PORT", default=5432),
     }
 }
