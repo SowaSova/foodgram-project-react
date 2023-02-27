@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    defaulf="django-insecure-g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni",
+    default="django-insecure-g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni",
 )
 
 
