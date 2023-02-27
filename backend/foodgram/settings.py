@@ -6,6 +6,7 @@ load_dotenv()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOAD_INGR_PATH = BASE_DIR / "backend" / "data" / "ingredients.csv"
 
 
 SECRET_KEY = os.getenv(
