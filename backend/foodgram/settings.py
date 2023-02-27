@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    default="g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
+    "g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
 )
 
 
@@ -74,7 +74,7 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": os.getenv(
-            "DB_ENGINE", default="django.db.backends.postgresql"
+            "DB_ENGINE", default="django.db.backends.postgresql"    
         ),
         "NAME": os.getenv("DB_NAME", default="postgres"),
         "USER": os.getenv("POSTGRES_USER", default="postgres"),
