@@ -1,10 +1,9 @@
-from django.db import models
 from colorfield.fields import ColorField
-from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
-from django.db.models import UniqueConstraint
+from django.db import models
+from django.db.models import F, Sum, UniqueConstraint
 
-User = get_user_model()
+from users.models import User
 
 
 class Tag(models.Model):
@@ -12,6 +11,7 @@ class Tag(models.Model):
         "Название тега",
         max_length=200,
         unique=True,
+        db_index=True,
     )
     color = ColorField(
         verbose_name="Цвет в HEX",
@@ -21,6 +21,7 @@ class Tag(models.Model):
         "Уникальный слаг",
         unique=True,
         max_length=200,
+        db_index=True,
     )
 
     class Meta:
@@ -35,6 +36,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         "Название ингредиента",
         max_length=200,
+        db_index=True,
     )
     measurement_unit = models.CharField("Ед. измерения", max_length=10)
 
@@ -51,8 +53,13 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="recipes",
+        db_index=True,
     )
-    name = models.CharField("Название рецепта", max_length=200)
+    name = models.CharField(
+        "Название рецепта",
+        max_length=200,
+        db_index=True,
+    )
     text = models.TextField(
         "Описание",
         max_length=2000,
@@ -73,6 +80,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         related_name="tags",
+        db_index=True,
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
     is_favorite = models.ManyToManyField(
@@ -86,6 +94,20 @@ class Recipe(models.Model):
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
 
+    def get_shopping_list(self, user):
+        if not user.is_authenticated:
+            return None
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe=self,
+            is_in_shopping_list=True,
+            recipe__author=user,
+        ).values(
+            ingredient=F('ingredient__name'),
+            measure=F('ingredient__measurement_unit'),
+        ).annotate(amount=Sum('amount'))
+
+        return ingredients
+    
     def __str__(self):
         return f"{self.name}"
 

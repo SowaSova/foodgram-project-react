@@ -1,8 +1,6 @@
 from datetime import datetime as dt
 from urllib.parse import unquote
 
-from django.contrib.auth import get_user_model
-from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
@@ -11,24 +9,22 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
+from users.models import User
 
+from .filters import RecipeFilter
 from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
-from .permissions import AdminOrReadOnly, AuthorStaffOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    RecipeSerializer,
-    ShortRecipeSerializer,
-    TagSerializer,
-    FollowSerializer,
-)
-
-User = get_user_model()
+from .permissions import (AdminOrReadOnly, AuthenticatedAndNotAnonymous,
+                          AuthorStaffOrReadOnly)
+from .serializers import (FollowSerializer, IngredientSerializer,
+                          RecipeSerializer, ShortRecipeSerializer,
+                          TagSerializer)
 
 
 class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
     pagination_class = PageLimitPagination
     add_serializer = FollowSerializer
+    permission_classes = [AuthenticatedAndNotAnonymous]
 
     @action(
         methods=(
@@ -44,8 +40,6 @@ class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
     @action(methods=("get",), detail=False)
     def subscriptions(self, request):
         user = self.request.user
-        if user.is_anonymous:
-            return Response(status=HTTP_401_UNAUTHORIZED)
         authors = user.follow.all()
         pages = self.paginate_queryset(authors)
         serializer = FollowSerializer(
@@ -87,6 +81,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
         queryset = self.queryset
@@ -102,30 +97,9 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         user = self.request.user
         if user.is_anonymous:
             return queryset
-
-        is_in_shopping = self.request.query_params.get("is_in_shopping_cart")
-        if is_in_shopping in (
-            "1",
-            "true",
-        ):
-            queryset = queryset.filter(is_in_shopping_list=user.id)
-        elif is_in_shopping in (
-            "0",
-            "false",
-        ):
-            queryset = queryset.exclude(is_in_shopping_list=user.id)
-
-        is_favorited = self.request.query_params.get("is_favorited")
-        if is_favorited in (
-            "1",
-            "true",
-        ):
-            queryset = queryset.filter(is_favorite=user.id)
-        if is_favorited in (
-            "0",
-            "false",
-        ):
-            queryset = queryset.exclude(is_favorite=user.id)
+        
+        filter = RecipeFilter(self.request.query_params)
+        queryset = filter.filter_queryset(queryset, user)
 
         return queryset
 
@@ -155,35 +129,18 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     def download_shopping_cart(self, request):
         TIME_FORMAT = "%d/%m/%Y %H:%M"
         user = self.request.user
-        if not user.shopping_list.exists():
+        ingredients = self.queryset.model().get_shopping_list(user)
+
+        if not ingredients:
             return Response(status=HTTP_400_BAD_REQUEST)
-        ingredients = (
-            IngredientInRecipe.objects.filter(
-                recipe__in=(user.shopping_list.values("id"))
-            )
-            .values(
-                ingredient=F("ingredients__name"),
-                measure=F("ingredients__measurement_unit"),
-            )
-            .annotate(amount=Sum("amount"))
-        )
 
         filename = f"{user.username}_shopping_list.txt"
-        shopping_list = (
-            f"Список покупок для пользователя {user.first_name}:\n\n"
-        )
+        shopping_list = f"Список покупок для пользователя {user.first_name}:\n\n"
         for ing in ingredients:
-            shopping_list += (
-                f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
-            )
+            shopping_list += f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
 
-        shopping_list += (
-            f"\nДата составления {dt.now().strftime(TIME_FORMAT)}."
-            "\n\nMade in Foodgram 2022 (c)"
-        )
+        shopping_list += f"\nДата составления {dt.now().strftime(TIME_FORMAT)}."
 
-        response = HttpResponse(
-            shopping_list, content_type="text.txt; charset=utf-8"
-        )
+        response = HttpResponse(shopping_list, content_type="text.txt; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response

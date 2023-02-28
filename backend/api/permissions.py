@@ -1,7 +1,5 @@
-from rest_framework.permissions import (
-    BasePermission,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (BasePermission,
+                                        IsAuthenticatedOrReadOnly)
 
 
 class AuthorStaffOrReadOnly(IsAuthenticatedOrReadOnly):
@@ -29,3 +27,9 @@ class OwnerOrReadOnly(IsAuthenticatedOrReadOnly):
             or (request.user == obj)
             or request.user.is_admin
         )
+
+
+class AuthenticatedAndNotAnonymous(BasePermission):
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated and 
+                not request.user.is_anonymous)
