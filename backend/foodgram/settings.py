@@ -6,12 +6,13 @@ load_dotenv()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# LOAD_INGR_PATH = BASE_DIR / "backend" / "data" / "ingredients.csv"
+print(BASE_DIR)
+LOAD_INGR_PATH = os.path.join(BASE_DIR, 'data', 'ingredients.csv')
 
 
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    "g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
+    default="g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
 )
 
 
