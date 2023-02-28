@@ -98,8 +98,8 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         if user.is_anonymous:
             return queryset
         
-        filter = RecipeFilter(self.request.query_params)
-        queryset = filter.filter_queryset(queryset, user)
+        q_filter = RecipeFilter(self.request.query_params)
+        queryset = q_filter.filter_queryset(queryset, user)
 
         return queryset
 
