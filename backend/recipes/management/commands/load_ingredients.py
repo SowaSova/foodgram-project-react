@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Загрузка списка ингредиентов из CSV-файла"
 
     def handle(self, **kwargs):
-        with open(settings.LOAD_INGR_PATH, "r", encoding="UTF-8") as file:
+        with open(settings.DATA_PATH, "r", encoding="UTF-8") as file:
             reader = csv.reader(file, delimiter=",")
 
             ingredient_list = [

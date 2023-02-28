@@ -6,8 +6,7 @@ load_dotenv()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(BASE_DIR)
-LOAD_INGR_PATH = os.path.join(BASE_DIR, 'data', 'ingredients.csv')
+DATA_PATH = os.path.join(BASE_DIR, 'data', 'ingredients.csv')
 
 
 SECRET_KEY = os.getenv(
@@ -16,7 +15,7 @@ SECRET_KEY = os.getenv(
 )
 
 
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ["*"]
