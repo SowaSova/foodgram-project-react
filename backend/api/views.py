@@ -127,20 +127,8 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
 
     @action(methods=("get",), detail=False)
     def download_shopping_cart(self, request):
-        TIME_FORMAT = "%d/%m/%Y %H:%M"
         user = self.request.user
-        ingredients = self.queryset.model().get_shopping_list(user)
-
-        if not ingredients:
+        recipe = Recipe.objects.filter(is_in_shopping_list=user).first()
+        if not recipe:
             return Response(status=HTTP_400_BAD_REQUEST)
-
-        filename = f"{user.username}_shopping_list.txt"
-        shopping_list = f"Список покупок для пользователя {user.first_name}:\n\n"
-        for ing in ingredients:
-            shopping_list += f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
-
-        shopping_list += f"\nДата составления {dt.now().strftime(TIME_FORMAT)}."
-
-        response = HttpResponse(shopping_list, content_type="text.txt; charset=utf-8")
-        response["Content-Disposition"] = f"attachment; filename={filename}"
-        return response
+        return recipe.download_shopping_cart(user)

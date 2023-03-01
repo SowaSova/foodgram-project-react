@@ -1,7 +1,10 @@
+from datetime import datetime as dt
+
 from colorfield.fields import ColorField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum, UniqueConstraint
+from django.http import HttpResponse
 
 from users.models import User
 
@@ -107,6 +110,24 @@ class Recipe(models.Model):
         ).annotate(amount=Sum('amount'))
 
         return ingredients
+
+    def download_shopping_cart(self, user):
+        TIME_FORMAT = "%d/%m/%Y %H:%M"
+        ingredients = self.get_shopping_list(user)
+
+        if not ingredients:
+            return None
+
+        filename = f"{user.username}_shopping_list.txt"
+        shopping_list = f"Список покупок для пользователя {user.first_name}:\n\n"
+        for ing in ingredients:
+            shopping_list += f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
+
+        shopping_list += f"\nДата составления {dt.now().strftime(TIME_FORMAT)}."
+
+        response = HttpResponse(shopping_list, content_type="text.txt; charset=utf-8")
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
     
     def __str__(self):
         return f"{self.name}"
