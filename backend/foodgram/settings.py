@@ -1,21 +1,21 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOAD_INGR_PATH = BASE_DIR / "backend" / "data" / "ingredients.csv"
+DATA_PATH = os.path.join(BASE_DIR, "data", "ingredients.csv")
 
 
 SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
+    "SECRET_KEY", default="g!-zn_(tgb)_!6^iw=v!=*st#o8j@=uocu!-0_m_9+jqo!n-ni"
 )
 
 
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ["*"]
@@ -75,7 +75,7 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": os.getenv(
-            "DB_ENGINE", default="django.db.backends.postgresql"    
+            "DB_ENGINE", default="django.db.backends.postgresql"
         ),
         "NAME": os.getenv("DB_NAME", default="postgres"),
         "USER": os.getenv("POSTGRES_USER", default="postgres"),
@@ -119,7 +119,6 @@ DJOSER = {
         "user_create": "api.serializers.UserSerializer",
     },
 }
-
 
 
 AUTH_USER_MODEL = "users.User"
