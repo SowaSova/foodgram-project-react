@@ -1,11 +1,6 @@
 version: '3.3'
 services:
 
-  frontend:
-    image: sowasova/foodgram_frontend:latest
-    volumes:
-      - ../frontend/:/app/result_build/
-
   db:
     image: postgres:13.0-alpine
     expose:
@@ -14,7 +9,16 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
-  
+
+  frontend:
+    image: sowasova/foodgram_frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+    depends_on:
+      - db
+      
+
+
   backend:
     image: sowasova/foodgram_backend:latest
     restart: always
@@ -33,7 +37,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/nginx/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/var/html/static/
