@@ -1,10 +1,9 @@
-from datetime import datetime as dt
-
 from colorfield.fields import ColorField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum, UniqueConstraint
 from django.http import HttpResponse
+from django.utils import timezone as tz
 
 from users.models import User
 
@@ -100,35 +99,46 @@ class Recipe(models.Model):
     def get_shopping_list(self, user):
         if not user.is_authenticated:
             return None
-        ingredients = IngredientInRecipe.objects.filter(
-            recipe=self,
-            is_in_shopping_list=True,
-            recipe__author=user,
-        ).values(
-            ingredient=F('ingredient__name'),
-            measure=F('ingredient__measurement_unit'),
-        ).annotate(amount=Sum('amount'))
+        ingredients = (
+            IngredientInRecipe.objects.filter(
+                recipe=self,
+                is_in_shopping_list=True,
+                recipe__author=user,
+            )
+            .values(
+                ingredient=F("ingredient__name"),
+                measure=F("ingredient__measurement_unit"),
+            )
+            .annotate(amount=Sum("amount"))
+        )
 
         return ingredients
 
-    def download_shopping_cart(self, user):
+    def create_shopping_list(self, user, filename=None):
         TIME_FORMAT = "%d/%m/%Y %H:%M"
         ingredients = self.get_shopping_list(user)
 
         if not ingredients:
             return None
 
-        filename = f"{user.username}_shopping_list.txt"
-        shopping_list = f"Список покупок для пользователя {user.first_name}:\n\n"
+        shopping_list = (
+            f"Список покупок для пользователя {user.first_name}:\n\n"
+        )
         for ing in ingredients:
-            shopping_list += f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
+            shopping_list += (
+                f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
+            )
 
-        shopping_list += f"\nДата составления {dt.now().strftime(TIME_FORMAT)}."
+        shopping_list += (
+            f"\nДата составления {tz.now().strftime(TIME_FORMAT)}."
+        )
 
-        response = HttpResponse(shopping_list, content_type="text.txt; charset=utf-8")
-        response["Content-Disposition"] = f"attachment; filename={filename}"
-        return response
-    
+        if filename:
+            with open(filename, "w") as f:
+                f.write(shopping_list)
+
+        return shopping_list
+
     def __str__(self):
         return f"{self.name}"
 

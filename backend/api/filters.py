@@ -5,17 +5,15 @@ from recipes.models import Recipe
 
 class RecipeFilter(filters.FilterSet):
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name='is_in_shopping_list',
-        method='filter_is_in_shopping_cart'
+        field_name="is_in_shopping_list", method="filter_is_in_shopping_cart"
     )
     is_favorited = filters.BooleanFilter(
-        field_name='is_favorite',
-        method='filter_is_favorited'
+        field_name="is_favorite", method="filter_is_favorited"
     )
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags')
+        fields = ("author", "tags")
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user

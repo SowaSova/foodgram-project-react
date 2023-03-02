@@ -97,7 +97,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         user = self.request.user
         if user.is_anonymous:
             return queryset
-        
+
         q_filter = RecipeFilter(self.request.query_params)
         queryset = q_filter.filter_queryset(queryset, user)
 
@@ -126,9 +126,20 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         return self.add_remove_relation(pk, "shopping_cart_M2M")
 
     @action(methods=("get",), detail=False)
-    def download_shopping_cart(self, request):
+    def download_shopping_list(self, request):
         user = self.request.user
         recipe = Recipe.objects.filter(is_in_shopping_list=user).first()
         if not recipe:
             return Response(status=HTTP_400_BAD_REQUEST)
-        return recipe.download_shopping_cart(user)
+
+        filename = f"{user.username}_shopping_list.txt"
+        shopping_list = recipe.create_shopping_list(user, filename=filename)
+        if not shopping_list:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        response = HttpResponse(
+            open(filename).read(), content_type="text/plain; charset=utf-8"
+        )
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+
+        return response
