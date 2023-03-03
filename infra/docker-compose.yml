@@ -16,8 +16,6 @@ services:
       - ../frontend/:/app/result_build/
     depends_on:
       - db
-      
-
 
   backend:
     image: sowasova/foodgram_backend:latest

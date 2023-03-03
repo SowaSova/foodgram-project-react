@@ -41,8 +41,4 @@ class RecipeAdmin(ModelAdmin):
         "tags",
     )
     empty_value_display = EMPTY_VALUE_DISPLAY
-    readonly_fields = ("add_in_favorites",)
     inlines = (IngredientInLine,)
-
-    def add_in_favorites(self, obj):
-        return obj.favorites_list.count()
