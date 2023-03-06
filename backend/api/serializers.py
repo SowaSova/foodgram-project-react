@@ -37,8 +37,8 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "is_subscribed",
             "password",
+            "is_subscribed"
         )
         extra_kwargs = {"password": {"write_only": True}}
         read_only_fields = ("is_subscribed",)
@@ -73,11 +73,12 @@ class FollowSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "is_subscribed",
             "recipes",
             "recipes_count",
         )
-        read_only_fields = ("__all__",)
+
+    def get_is_subscribed(**args):
+        return True
 
     def get_recipes_count(self, author):
         return author.recipes.count()
@@ -116,18 +117,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, recipe):
-        ingredients = recipe.ingredient.values(
-            "ingredients__id",
-            "ingredients__name",
-            "ingredients__measurement_unit",
-            "amount",
-        )
+        ingredient = recipe.ingredients.through.objects.filter(recipe=recipe)
         return [
             {
-                key.replace("ingredients__", ""): val
-                for key, val in ingredient.items()
+                "id": info.ingredient.id,
+                "name": info.ingredient.name,
+                "measurement_unit": info.ingredient.measurement_unit,
+                "amount": info.amount,
             }
-            for ingredient in ingredients
+            for info in ingredient
         ]
 
     def get_is_favorited(self, obj):
@@ -141,6 +139,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return user.shopping_list.filter(id=recipe.id).exists()
+
 
     def create(self, validated_data):
         image = validated_data.pop("image")

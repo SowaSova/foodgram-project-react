@@ -67,7 +67,7 @@ class Recipe(models.Model):
         max_length=2000,
     )
     image = models.ImageField(
-        "Картинка", upload_to="recipes/images/", blank=True
+        "Картинка", upload_to="media/recipes/images/", blank=True
     )
     cooking_time = models.PositiveSmallIntegerField(
         "Время приготовление (мин.)",
@@ -102,11 +102,11 @@ class Recipe(models.Model):
         ingredients = (
             IngredientInRecipe.objects.filter(
                 recipe=self,
-                is_in_shopping_list=True,
+                recipe__is_in_shopping_list=True,
                 recipe__author=user,
             )
             .values(
-                ingredient=F("ingredient__name"),
+                ingredient_name=F("ingredient__name"),
                 measure=F("ingredient__measurement_unit"),
             )
             .annotate(amount=Sum("amount"))

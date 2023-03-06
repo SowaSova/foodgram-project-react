@@ -15,6 +15,10 @@ class RecipeFilter(filters.FilterSet):
         model = Recipe
         fields = ("author", "tags")
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs["request"]
+        super().__init__(*args, **kwargs)
+
     def filter_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
         if value:

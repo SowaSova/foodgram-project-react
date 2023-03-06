@@ -2,6 +2,7 @@ from datetime import datetime as dt
 from urllib.parse import unquote
 
 from django.http.response import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,11 +15,18 @@ from users.models import User
 from .filters import RecipeFilter
 from .mixins import AddDelViewMixin
 from .paginators import PageLimitPagination
-from .permissions import (AdminOrReadOnly, AuthenticatedAndNotAnonymous,
-                          AuthorStaffOrReadOnly)
-from .serializers import (FollowSerializer, IngredientSerializer,
-                          RecipeSerializer, ShortRecipeSerializer,
-                          TagSerializer)
+from .permissions import (
+    AdminOrReadOnly,
+    AuthenticatedAndNotAnonymous,
+    AuthorStaffOrReadOnly,
+)
+from .serializers import (
+    FollowSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
+    ShortRecipeSerializer,
+    TagSerializer,
+)
 
 
 class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
@@ -81,6 +89,9 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+    ]
     filterset_class = RecipeFilter
 
     def get_queryset(self):
@@ -98,8 +109,10 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         if user.is_anonymous:
             return queryset
 
-        q_filter = RecipeFilter(self.request.query_params)
-        queryset = q_filter.filter_queryset(queryset, user)
+        q_filter = RecipeFilter(
+            data=self.request.query_params, request=self.request
+        )
+        queryset = q_filter.qs
 
         return queryset
 
