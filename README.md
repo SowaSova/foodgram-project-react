@@ -37,17 +37,11 @@
 - GitHub Actions
 
 
-## Installation
+## Установки
 
 Клонировать проект
 ```sh
 git clone git@github.com:SowaSova/foodgram-project-react.git
-```
-
-Создать бд
-```sh
-psql -U <имя_пользователя>
-CREATE DATABASE <название>
 ```
 
 Создать в папке infra .env файл
