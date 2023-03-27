@@ -2,7 +2,7 @@
 
 # Продуктовый помощник
 
-![Status](https://github.com/SowaSova/foodgram-project-react/actions/workflows/main.yml/badge.svg))
+![Status](https://github.com/SowaSova/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 Этот онлайн-сервис поможет Вам:
 
