@@ -37,15 +37,23 @@ const RecipeEdit = ({ onItemDelete }) => {
     }
     api
       .getIngredients({ name: ingredientValue.name })
-      .then(ingredients => {
-        setIngredients(ingredients)
+      .then(data => {
+        if (data && Array.isArray(data.results)) {
+          setIngredients(data.results)
+        } else {
+          console.error('Ошибка: data.results не является массивом', data)
+        }
       })
   }, [ingredientValue.name])
 
   useEffect(_ => {
     api.getTags()
-      .then(tags => {
-        setValue(tags.map(tag => ({ ...tag, value: true })))
+      .then(data => {
+        if (data && Array.isArray(data.results)) {
+          setValue(data.results.map(tag => ({ ...tag, value: true })))
+        } else {
+          console.error('Ошибка: data.results не является массивом', data)
+        }
       })
   }, [])
 
