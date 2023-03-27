@@ -11,6 +11,21 @@
 - делиться и подписываться
 - выводить ингредиенты в отдельный текстовый файл
 
+## Как воспользоваться?
+
+По этой -> [ссылке](http://158.160.11.185/)
+Данные пользователя:
+Почта: 
+* num@lo.ck
+Парл:
+* useruser
+
+Данные админа:
+Логин:
+* admin
+Пароль:
+* adminadmin
+
 ## Технологии
 
 - Python 3.7
@@ -22,23 +37,16 @@
 - GitHub Actions
 
 
-## Installation
+## Установки
 
 Клонировать проект
 ```sh
 git clone git@github.com:SowaSova/foodgram-project-react.git
 ```
 
-Создать бд
-```sh
-psql -U <имя_пользователя>
-CREATE DATABASE <название>
-```
-
 Создать в папке infra .env файл
 ```sh
 cd foodgram-project-react/infra
-touch .env
 nano .env
 ```
 
@@ -59,8 +67,9 @@ sudo docker-compose up -d --build
 
 Финальные шаги
 ```sh
-sudo docker-compose exec backend python manage.py migrate
-sudo docker-compose exec backend python manage.py createsuperuser
-sudo docker-compose exec backend python manage.py collectstatic --no-input
+docker-compose exec backend python manage.py migrate
+docker-compose exec backend python manage.py createsuperuser
+docker-compose exec backend python manage.py collectstatic --no-input
+docker-composer exec backend python manage.py load_ingredients
 ```
 
