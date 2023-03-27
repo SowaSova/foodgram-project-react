@@ -31,13 +31,11 @@ class RecipeAdmin(ModelAdmin):
     )
     list_filter = (
         "name",
-        "author",
-        "tags",
+        "author__username",
     )
     search_fields = (
         "name",
         "author",
-        "tags",
     )
     empty_value_display = EMPTY_VALUE_DISPLAY
     inlines = (IngredientInLine,)

@@ -139,14 +139,14 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         return self.add_remove_relation(pk, "shopping_cart_M2M")
 
     @action(methods=("get",), detail=False)
-    def download_shopping_list(self, request):
+    def download_shopping_cart(self, request):
         user = self.request.user
         recipe = Recipe.objects.filter(is_in_shopping_list=user).first()
         if not recipe:
             return Response(status=HTTP_400_BAD_REQUEST)
 
         filename = f"{user.username}_shopping_list.txt"
-        shopping_list = recipe.create_shopping_list(user, filename=filename)
+        shopping_list = recipe.create_shopping_cart(user, filename=filename)
         if not shopping_list:
             return Response(status=HTTP_400_BAD_REQUEST)
 

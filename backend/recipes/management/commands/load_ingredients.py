@@ -7,7 +7,6 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-
     help = "Загрузка списка ингредиентов из CSV-файла"
 
     def handle(self, **kwargs):

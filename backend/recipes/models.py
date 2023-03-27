@@ -74,14 +74,9 @@ class Recipe(models.Model):
         default=1,
         validators=[MinValueValidator(1, message="Меньше минуты?")],
     )
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        related_name="ingredients",
-        through="IngredientInRecipe",
-    )
     tags = models.ManyToManyField(
         Tag,
-        related_name="tags",
+        related_name="recipes",
         db_index=True,
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
@@ -100,21 +95,17 @@ class Recipe(models.Model):
         if not user.is_authenticated:
             return None
         ingredients = (
-            IngredientInRecipe.objects.filter(
-                recipe=self,
-                recipe__is_in_shopping_list=True,
-                recipe__author=user,
-            )
+            IngredientInRecipe.objects.filter(recipe__is_in_shopping_list=user)
             .values(
-                ingredient_name=F("ingredient__name"),
-                measure=F("ingredient__measurement_unit"),
+                ing_name=F("ingredients__name"),
+                measure=F("ingredients__measurement_unit"),
             )
             .annotate(amount=Sum("amount"))
+            .order_by("ingredients__name")
         )
-
         return ingredients
 
-    def create_shopping_list(self, user, filename=None):
+    def create_shopping_cart(self, user, filename=None):
         TIME_FORMAT = "%d/%m/%Y %H:%M"
         ingredients = self.get_shopping_list(user)
 
@@ -126,7 +117,7 @@ class Recipe(models.Model):
         )
         for ing in ingredients:
             shopping_list += (
-                f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
+                f'{ing["ing_name"]}: {ing["amount"]} {ing["measure"]}\n'
             )
 
         shopping_list += (
@@ -144,13 +135,13 @@ class Recipe(models.Model):
 
 
 class IngredientInRecipe(models.Model):
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name="ingredient_in_recipe",
+        related_name="recipe",
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="ingredient_in_recipe"
+        Recipe, on_delete=models.CASCADE, related_name="ingredient"
     )
     amount = models.PositiveSmallIntegerField(
         "Количество",
@@ -161,10 +152,7 @@ class IngredientInRecipe(models.Model):
         verbose_name = "Ингредиент в рецепте"
         constraints = [
             UniqueConstraint(
-                fields=["ingredient", "recipe"],
+                fields=["ingredients", "recipe"],
                 name="unique_ingredient_recipe",
             )
         ]
-
-    def __str__(self):
-        return f"{self.ingredient}, {self.recipe}, {self.amount}"

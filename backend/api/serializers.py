@@ -4,19 +4,21 @@ from rest_framework import serializers
 from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
-from .utils import enter_ingredient_quantity_in_recipe
+from .utils import check_value_validate, enter_ingredient_quantity_in_recipe
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = "__all__"
+        read_only_fields = ("__all__",)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = "__all__"
+        read_only_fields = ("__all__",)
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
@@ -38,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "password",
-            "is_subscribed"
+            "is_subscribed",
         )
         extra_kwargs = {"password": {"write_only": True}}
         read_only_fields = ("is_subscribed",)
@@ -76,6 +78,7 @@ class FollowSerializer(serializers.ModelSerializer):
             "recipes",
             "recipes_count",
         )
+        read_only_fields = ("__all__",)
 
     def get_is_subscribed(**args):
         return True
@@ -93,7 +96,6 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
@@ -117,15 +119,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_ingredients(self, recipe):
-        ingredient = recipe.ingredients.through.objects.filter(recipe=recipe)
+        ingredients = recipe.ingredient.values(
+            "ingredients__id",
+            "ingredients__name",
+            "ingredients__measurement_unit",
+            "amount",
+        )
         return [
             {
-                "id": info.ingredient.id,
-                "name": info.ingredient.name,
-                "measurement_unit": info.ingredient.measurement_unit,
-                "amount": info.amount,
+                key.replace("ingredients__", ""): val
+                for key, val in ingredient.items()
             }
-            for info in ingredient
+            for ingredient in ingredients
         ]
 
     def get_is_favorited(self, obj):
@@ -140,6 +145,38 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return user.shopping_list.filter(id=recipe.id).exists()
 
+    def validate(self, data):
+        name = str(self.initial_data.get("name")).strip()
+        tags = self.initial_data.get("tags")
+        ingredients = self.initial_data.get("ingredients")
+        values_list = (tags, ingredients)
+
+        for value in values_list:
+            if not isinstance(value, list):
+                raise serializers.ValidationError(
+                    f'"{value}" должен быть в формате "[]"'
+                )
+
+        for tag in tags:
+            check_value_validate(tag, Tag)
+
+        valid_ingredients = []
+        for ing in ingredients:
+            ing_id = ing.get("id")
+            ingredient = check_value_validate(ing_id, Ingredient)
+
+            amount = ing.get("amount")
+            check_value_validate(amount)
+
+            valid_ingredients.append(
+                {"ingredient": ingredient, "amount": amount}
+            )
+
+        data["name"] = name.capitalize()
+        data["tags"] = tags
+        data["ingredients"] = valid_ingredients
+        data["author"] = self.context.get("request").user
+        return data
 
     def create(self, validated_data):
         image = validated_data.pop("image")
@@ -152,8 +189,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, recipe, validated_data):
         tags = validated_data.get("tags")
-        ingredients = validated_data.get("ingredient")
-
+        ingredients = validated_data.get("ingredients")
         recipe.image = validated_data.get("image", recipe.image)
         recipe.name = validated_data.get("name", recipe.name)
         recipe.text = validated_data.get("text", recipe.text)
