@@ -67,7 +67,7 @@ class Recipe(models.Model):
         max_length=2000,
     )
     image = models.ImageField(
-        "Картинка", upload_to="media/recipes/images/", blank=True
+        "Картинка", upload_to="recipes/images/", blank=True
     )
     cooking_time = models.PositiveSmallIntegerField(
         "Время приготовление (мин.)",
