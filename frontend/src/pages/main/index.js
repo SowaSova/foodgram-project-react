@@ -14,11 +14,13 @@ const HomePage = ({ updateOrders }) => {
     recipesPage,
     setRecipesPage,
     tagsValue,
-    setTagsValue,
+    setTagsValue: setValue,
     handleTagsChange,
     handleLike,
     handleAddToCart
   } = useRecipes()
+
+  console.log('HomePage tagsValue:', tagsValue)
 
 
   const getRecipes = ({ page = 1, tags }) => {
@@ -32,16 +34,20 @@ const HomePage = ({ updateOrders }) => {
   }
 
   useEffect(_ => {
+    console.log('tagsValue:', tagsValue)
     getRecipes({ page: recipesPage, tags: tagsValue })
   }, [recipesPage, tagsValue])
 
   useEffect(_ => {
     api.getTags()
-      .then(tags => {
-        setTagsValue(tags.map(tag => ({ ...tag, value: true })))
+      .then(data => {
+        if (data && Array.isArray(data.results)) {
+          setValue(data.results.map(tag => ({ ...tag, value: true })))
+        } else {
+          console.error('Ошибка: data.results не является массивом', data)
+        }
       })
   }, [])
-
 
   return <Main>
     <Container>

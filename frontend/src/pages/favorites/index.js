@@ -36,8 +36,12 @@ const Favorites = ({ updateOrders }) => {
 
   useEffect(_ => {
     api.getTags()
-      .then(tags => {
-        setTagsValue(tags.map(tag => ({ ...tag, value: true })))
+      .then(data => {
+        if (data && Array.isArray(data.results)) {
+          setTagsValue(data.results.map(tag => ({ ...tag, value: true })))
+        } else {
+          console.error('Ошибка: data.results не является массивом', data)
+        }
       })
   }, [])
 
