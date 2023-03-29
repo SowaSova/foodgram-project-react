@@ -20,8 +20,6 @@ const HomePage = ({ updateOrders }) => {
     handleAddToCart
   } = useRecipes()
 
-  console.log('HomePage tagsValue:', tagsValue)
-
 
   const getRecipes = ({ page = 1, tags }) => {
     api
@@ -34,7 +32,6 @@ const HomePage = ({ updateOrders }) => {
   }
 
   useEffect(_ => {
-    console.log('tagsValue:', tagsValue)
     getRecipes({ page: recipesPage, tags: tagsValue })
   }, [recipesPage, tagsValue])
 
