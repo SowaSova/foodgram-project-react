@@ -89,13 +89,13 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorStaffOrReadOnly,)
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
-    filter_backends = [
-        DjangoFilterBackend,
-    ]
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        queryset = self.queryset
+        q_filter = RecipeFilter(
+            data=self.request.query_params, request=self.request
+        )
+        queryset = q_filter.qs
 
         tags = self.request.query_params.getlist("tags")
         if tags:
@@ -108,11 +108,6 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         user = self.request.user
         if user.is_anonymous:
             return queryset
-
-        q_filter = RecipeFilter(
-            data=self.request.query_params, request=self.request
-        )
-        queryset = q_filter.qs
 
         return queryset
 

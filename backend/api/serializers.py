@@ -189,7 +189,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, recipe, validated_data):
         tags = validated_data.get("tags")
-        ingredients = validated_data.get("ingredients")
+        ingredients = validated_data.get("ingredient")
         recipe.image = validated_data.get("image", recipe.image)
         recipe.name = validated_data.get("name", recipe.name)
         recipe.text = validated_data.get("text", recipe.text)

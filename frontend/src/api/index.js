@@ -397,7 +397,10 @@ class Api {
         }
       }
     ).then(this.checkFileDownloadResponse)
+    .catch(error=>console.error('Ошибка при загрузке файла', error))
   }
 }
+
+  
 
 export default new Api(process.env.API_URL || 'http://localhost', { 'content-type': 'application/json' })
